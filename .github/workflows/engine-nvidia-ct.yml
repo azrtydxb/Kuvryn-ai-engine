@@ -1,0 +1,61 @@
+name: engine-nvidia-ct
+
+on:
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: NVIDIA flavor to validate
+        required: true
+        type: choice
+        options:
+          - vllm-nvidia
+          - sglang-nvidia
+          - llama-cpp-nvidia
+          - tensorrt-llm-nvidia
+      image:
+        description: Image reference to validate, preferably ghcr digest ref
+        required: true
+      openai_base_url:
+        description: Optional running OpenAI-compatible endpoint URL
+        required: false
+      model:
+        description: Optional model name for OpenAI smoke
+        required: false
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ inputs.flavor }}
+  cancel-in-progress: false
+
+jobs:
+  nvidia-ct:
+    runs-on: [self-hosted, nvidia, gpu]
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+      - run: go run ./cmd/kuvryn-manifest-check --root .
+      - name: Run NVIDIA CT and emit report
+        env:
+          FLAVOR: ${{ inputs.flavor }}
+          IMAGE: ${{ inputs.image }}
+          OPENAI_BASE_URL: ${{ inputs.openai_base_url }}
+          MODEL: ${{ inputs.model }}
+        run: ci/container-tests/nvidia-ct-report.sh "$FLAVOR" "$IMAGE" "$OPENAI_BASE_URL" "$MODEL" > "ct-reports/${FLAVOR}.json"
+      - name: Validate CT evidence
+        env:
+          FLAVOR: ${{ inputs.flavor }}
+        run: |
+          flavor="$FLAVOR"
+          go run ./cmd/kuvryn-ct-validate \
+            --manifest "engines/${flavor%-*}/${flavor##*-}/image.yaml" \
+            --report "ct-reports/${flavor}.json"
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: nvidia-ct-report-${{ inputs.flavor }}
+          path: ct-reports/${{ inputs.flavor }}.json

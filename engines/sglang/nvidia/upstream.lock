@@ -1,0 +1,30 @@
+schema: kuvryn.engine-lock/v1
+flavor: sglang-nvidia
+resolvedInputs:
+    - name: engine
+      type: static-version
+      value: 0.5.19
+      source: engine
+    - name: base-image
+      type: container-digest
+      value: nvcr.io/nvidia/pytorch:25.06-py3
+      digest: sha256:025d9b102b5436d4af8af58f12c6a46b7e5d16f19543b1d2cc4446bf2650b4f1
+      source: nvcr.io/nvidia/pytorch:25.06-py3
+imageDigest: sha256:90a8096649f2e7b1a2ee2a4782aaa4426112e55a14d21a8bd5a875ce76046245
+publishedTags:
+    - 90a8096649f2e7b1a2ee2a4782aaa4426112e55a14d21a8bd5a875ce76046245
+    - v0.1.0_nvidia_sglang_0.5.19
+    - v0.1.0_nvidia_sglang_nightly
+    - latest
+    - hardware-certified
+testEvidence:
+    - name: static
+      status: passed
+    - name: sbom
+      status: passed
+    - name: vendor-device
+      status: passed
+    - name: wrapper-exec
+      status: passed
+    - name: runtime-command
+      status: passed

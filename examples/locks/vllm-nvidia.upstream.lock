@@ -1,0 +1,30 @@
+schema: kuvryn.engine-lock/v1
+flavor: vllm-nvidia
+resolvedInputs:
+  - name: engine
+    type: static-version
+    value: 0.29.0
+    source: engines/vllm/nvidia/image.yaml
+  - name: base-image
+    type: container-digest
+    value: nvcr.io/nvidia/pytorch:25.01-py3
+    digest: sha256:96990c82825613c3bdeebb66675c7c91b0123f64a5895623316dc5b824e0d7a9
+    source: engines/vllm/nvidia/image.yaml
+  - name: ray
+    type: pypi-version
+    value: 2.58.0
+    source: engines/vllm/nvidia/image.yaml
+imageDigest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+publishedTags:
+  - bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
+  - v0.1.0_nvidia_vllm_0.29.0
+  - v0.1.0_nvidia_vllm_nightly
+  - latest
+  - hardware-certified
+testEvidence:
+  - name: static
+    status: passed
+    report: ct-reports/vllm-nvidia.json
+  - name: vendor-device
+    status: passed
+    report: ct-reports/vllm-nvidia.json

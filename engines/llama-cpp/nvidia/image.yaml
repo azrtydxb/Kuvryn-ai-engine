@@ -1,0 +1,59 @@
+schema: kuvryn.engine-image/v1
+name: llama-cpp-nvidia
+engine: llama-cpp
+vendor: nvidia
+variant: default
+image:
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/llama-cpp-nvidia
+  platforms:
+    - linux/amd64
+    - linux/arm64
+  base:
+    image: nvidia/cuda
+    tag: 12.6.3-devel-ubuntu24.04
+build:
+  context: .
+  dockerfile: engines/llama-cpp/nvidia/Dockerfile
+  args:
+    ENGINE: llama-cpp
+    VENDOR: nvidia
+    LLAMA_CPP_REF: v0.4.1
+    LLAMA_CPP_CMAKE_FLAGS: -DGGML_CUDA=ON -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined -DCMAKE_SHARED_LINKER_FLAGS=-L/usr/local/cuda/lib64/stubs
+capabilities:
+  accelerators:
+    - nvidia
+  collective: nccl
+  distributed: true
+  rdma: optional
+  rayRequired: false
+upstreams:
+  - name: engine
+    type: static-version
+    version: v0.4.1
+  - name: base-image
+    type: container-digest
+    image: nvidia/cuda:12.6.3-devel-ubuntu24.04
+    digest: sha256:392c0df7b577ecae17a17f6ba7f2009c217bb4422f8431c053ae9af61a8c148a
+publish:
+  certification: hardware-certified
+  tags:
+    - digest
+    - latest
+tests:
+  - name: static
+    type: static
+    required: true
+  - name: runtime-command
+    type: runtime-command
+    required: true
+  - name: vendor-device
+    type: vendor-device
+    required: true
+    runner:
+      - nvidia
+labels:
+  org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
+  kuvryn.engine: llama-cpp
+  kuvryn.vendor: nvidia
+  kuvryn.flavor: llama-cpp-nvidia
+  kuvryn.certification: hardware-certified

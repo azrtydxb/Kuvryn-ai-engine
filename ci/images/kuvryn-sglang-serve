@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (($# > 0)); then
+	exec sglang serve "$@"
+fi
+model=${KUVRYN_MODEL:-}
+if [[ -z "$model" ]]; then
+	echo "KUVRYN_MODEL must be a Hugging Face model id or local model path for SGLang" >&2
+	exit 2
+fi
+host=${KUVRYN_HOST:-0.0.0.0}
+port=${KUVRYN_PORT:-8000}
+# shellcheck disable=SC2206 # KUVRYN_SGLANG_ARGS intentionally allows SGLang launch flags.
+extra=(${KUVRYN_SGLANG_ARGS:-})
+exec sglang serve --model-path "$model" --host "$host" --port "$port" "${extra[@]}"

@@ -1,0 +1,30 @@
+schema: kuvryn.engine-lock/v1
+flavor: llama-cpp-nvidia
+resolvedInputs:
+    - name: engine
+      type: static-version
+      value: v0.4.1
+      source: engine
+    - name: base-image
+      type: container-digest
+      value: nvidia/cuda:12.6.3-devel-ubuntu24.04
+      digest: sha256:392c0df7b577ecae17a17f6ba7f2009c217bb4422f8431c053ae9af61a8c148a
+      source: nvidia/cuda:12.6.3-devel-ubuntu24.04
+imageDigest: sha256:fd2dc7202eaa404f491723e0d5f6d4daf1b259a005f2c8323ba3ca8ef3e0c813
+publishedTags:
+    - fd2dc7202eaa404f491723e0d5f6d4daf1b259a005f2c8323ba3ca8ef3e0c813
+    - v0.1.0_nvidia_llama-cpp_0.4.1
+    - v0.1.0_nvidia_llama-cpp_nightly
+    - latest
+    - hardware-certified
+testEvidence:
+    - name: static
+      status: passed
+    - name: sbom
+      status: passed
+    - name: vendor-device
+      status: passed
+    - name: wrapper-exec
+      status: passed
+    - name: runtime-command
+      status: passed

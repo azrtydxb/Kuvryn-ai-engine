@@ -1,0 +1,23 @@
+schema: kuvryn.engine-lock/v1
+flavor: llama-cpp-cpu
+resolvedInputs:
+  - name: engine
+    type: static-version
+    value: v0.4.1
+    source: engines/llama-cpp/cpu/image.yaml
+  - name: base-image
+    type: container-digest
+    value: ubuntu:24.04
+    digest: sha256:69cecf4bbf72d2d44a9eef1b71fb98c7fb973d78af11399deccef19beb008ad9
+    source: engines/llama-cpp/cpu/image.yaml
+imageDigest: sha256:aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+publishedTags:
+  - aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
+  - v0.1.0_cpu_llama-cpp_0.4.1
+  - v0.1.0_cpu_llama-cpp_nightly
+  - latest
+  - cpu-only
+testEvidence:
+  - name: static
+    status: passed
+    report: ct-reports/llama-cpp-cpu.json

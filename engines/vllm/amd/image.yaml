@@ -1,0 +1,62 @@
+schema: kuvryn.engine-image/v1
+name: vllm-amd
+engine: vllm
+vendor: amd
+variant: default
+image:
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/vllm-amd
+  platforms:
+    - linux/amd64
+  base:
+    image: rocm/dev-ubuntu-22.04
+    tag: 6.2.4
+build:
+  context: .
+  dockerfile: engines/vllm/amd/Dockerfile
+  args:
+    ENGINE: vllm
+    VENDOR: amd
+    VLLM_VERSION: 0.29.0
+    RAY_VERSION: 2.58.0
+capabilities:
+  accelerators:
+    - amd
+  collective: rccl
+  distributed: true
+  rdma: optional
+  rayRequired: true
+upstreams:
+  - name: engine
+    type: static-version
+    version: 0.29.0
+  - name: base-image
+    type: container-digest
+    image: rocm/dev-ubuntu-22.04:6.2.4
+    digest: sha256:030304ab0a88778b627b2eb2354c419146e105f5ac39ffd9c2438c82ef54b584
+  - name: ray
+    type: pypi-version
+    package: ray
+    version: 2.58.0
+publish:
+  certification: hardware-untested
+  tags:
+    - digest
+    - hardware-untested
+tests:
+  - name: static
+    type: static
+    required: true
+  - name: runtime-command
+    type: runtime-command
+    required: true
+  - name: vendor-device
+    type: vendor-device
+    required: false
+    runner:
+      - amd
+labels:
+  org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
+  kuvryn.engine: vllm
+  kuvryn.vendor: amd
+  kuvryn.flavor: vllm-amd
+  kuvryn.certification: hardware-untested

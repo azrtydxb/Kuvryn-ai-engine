@@ -1,0 +1,58 @@
+schema: kuvryn.engine-image/v1
+name: llama-cpp-cpu
+engine: llama-cpp
+vendor: cpu
+variant: default
+image:
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/llama-cpp-cpu
+  platforms:
+    - linux/amd64
+    - linux/arm64
+  base:
+    image: ubuntu
+    tag: "24.04"
+build:
+  context: .
+  dockerfile: engines/llama-cpp/cpu/Dockerfile
+  args:
+    ENGINE: llama-cpp
+    VENDOR: cpu
+    LLAMA_CPP_REF: v0.4.1
+capabilities:
+  accelerators:
+    - cpu
+  collective: none
+  distributed: false
+  rdma: optional
+  rayRequired: false
+upstreams:
+  - name: engine
+    type: static-version
+    version: v0.4.1
+  - name: base-image
+    type: container-digest
+    image: ubuntu:24.04
+    digest: sha256:69cecf4bbf72d2d44a9eef1b71fb98c7fb973d78af11399deccef19beb008ad9
+publish:
+  certification: cpu-only
+  tags:
+    - digest
+    - cpu-latest
+tests:
+  - name: static
+    type: static
+    required: true
+  - name: runtime-command
+    type: runtime-command
+    required: true
+  - name: vendor-device
+    type: vendor-device
+    required: true
+    runner:
+      - cpu
+labels:
+  org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
+  kuvryn.engine: llama-cpp
+  kuvryn.vendor: cpu
+  kuvryn.flavor: llama-cpp-cpu
+  kuvryn.certification: cpu-only

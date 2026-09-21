@@ -1,0 +1,12 @@
+.git
+.github
+.procoder
+**/.DS_Store
+update-plan.json
+ct-reports
+publish-artifacts
+lock-updates
+image-digests
+.buildx-cache
+.kuvryn-model-cache
+.buildkit-tls

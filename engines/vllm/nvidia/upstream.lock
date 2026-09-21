@@ -1,0 +1,34 @@
+schema: kuvryn.engine-lock/v1
+flavor: vllm-nvidia
+resolvedInputs:
+    - name: engine
+      type: static-version
+      value: 0.29.0
+      source: engine
+    - name: base-image
+      type: container-digest
+      value: nvcr.io/nvidia/pytorch:25.01-py3
+      digest: sha256:96990c82825613c3bdeebb66675c7c91b0123f64a5895623316dc5b824e0d7a9
+      source: nvcr.io/nvidia/pytorch:25.01-py3
+    - name: ray
+      type: pypi-version
+      value: 2.58.0
+      source: ray
+imageDigest: sha256:d82a7a79e38b251ad2d9a78dc9844ca6e377e7d4f26f8799c26544293b07beb7
+publishedTags:
+    - d82a7a79e38b251ad2d9a78dc9844ca6e377e7d4f26f8799c26544293b07beb7
+    - v0.1.0_nvidia_vllm_0.29.0
+    - v0.1.0_nvidia_vllm_nightly
+    - latest
+    - hardware-certified
+testEvidence:
+    - name: static
+      status: passed
+    - name: sbom
+      status: passed
+    - name: vendor-device
+      status: passed
+    - name: wrapper-exec
+      status: passed
+    - name: runtime-command
+      status: passed

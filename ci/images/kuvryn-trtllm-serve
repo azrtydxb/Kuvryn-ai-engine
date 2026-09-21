@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (($# > 0)); then
+	exec trtllm-serve "$@"
+fi
+if [[ -z "${KUVRYN_TRTLLM_SERVE_ARGS:-}" ]]; then
+	echo "KUVRYN_TRTLLM_SERVE_ARGS must contain the trtllm-serve engine/checkpoint arguments" >&2
+	exit 2
+fi
+# shellcheck disable=SC2206 # TensorRT-LLM serve arguments are intentionally supplied by environment.
+args=(${KUVRYN_TRTLLM_SERVE_ARGS})
+exec trtllm-serve "${args[@]}"

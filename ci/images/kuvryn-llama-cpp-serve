@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+if (($# > 0)); then
+	exec llama-server "$@"
+fi
+model=${KUVRYN_MODEL:-}
+if [[ -z "$model" ]]; then
+	echo "KUVRYN_MODEL must point to a GGUF file for llama.cpp" >&2
+	exit 2
+fi
+host=${KUVRYN_HOST:-0.0.0.0}
+port=${KUVRYN_PORT:-8000}
+# shellcheck disable=SC2206 # KUVRYN_LLAMA_SERVER_ARGS intentionally allows llama-server flags.
+extra=(${KUVRYN_LLAMA_SERVER_ARGS:-})
+exec llama-server -m "$model" --host "$host" --port "$port" "${extra[@]}"

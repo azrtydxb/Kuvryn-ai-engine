@@ -1,0 +1,57 @@
+schema: kuvryn.engine-image/v1
+name: tensorrt-llm-nvidia
+engine: tensorrt-llm
+vendor: nvidia
+variant: default
+image:
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/tensorrt-llm-nvidia
+  platforms:
+    - linux/amd64
+    - linux/arm64
+  base:
+    image: nvcr.io/nvidia/tensorrt-llm/release
+    tag: 1.2.1
+build:
+  context: .
+  dockerfile: engines/tensorrt-llm/nvidia/Dockerfile
+  args:
+    ENGINE: tensorrt-llm
+    VENDOR: nvidia
+capabilities:
+  accelerators:
+    - nvidia
+  collective: nccl
+  distributed: true
+  rdma: optional
+  rayRequired: false
+upstreams:
+  - name: engine
+    type: static-version
+    version: 1.2.1
+  - name: base-image
+    type: container-digest
+    image: nvcr.io/nvidia/tensorrt-llm/release:1.2.1
+    digest: sha256:33cd085b772947bd22b7273886539331420404e5d2a4a039945241945ff927b9
+publish:
+  certification: hardware-certified
+  tags:
+    - digest
+    - latest
+tests:
+  - name: static
+    type: static
+    required: true
+  - name: runtime-command
+    type: runtime-command
+    required: true
+  - name: vendor-device
+    type: vendor-device
+    required: true
+    runner:
+      - nvidia
+labels:
+  org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
+  kuvryn.engine: tensorrt-llm
+  kuvryn.vendor: nvidia
+  kuvryn.flavor: tensorrt-llm-nvidia
+  kuvryn.certification: hardware-certified

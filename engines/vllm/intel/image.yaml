@@ -1,0 +1,62 @@
+schema: kuvryn.engine-image/v1
+name: vllm-intel
+engine: vllm
+vendor: intel
+variant: default
+image:
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/vllm-intel
+  platforms:
+    - linux/amd64
+  base:
+    image: intel/oneapi-runtime
+    tag: 2025.3.1-0-devel-ubuntu24.04
+build:
+  context: .
+  dockerfile: engines/vllm/intel/Dockerfile
+  args:
+    ENGINE: vllm
+    VENDOR: intel
+    VLLM_VERSION: 0.29.0
+    RAY_VERSION: 2.58.0
+capabilities:
+  accelerators:
+    - intel
+  collective: oneccl
+  distributed: true
+  rdma: optional
+  rayRequired: true
+upstreams:
+  - name: engine
+    type: static-version
+    version: 0.29.0
+  - name: base-image
+    type: container-digest
+    image: intel/oneapi-runtime:2025.3.1-0-devel-ubuntu24.04
+    digest: sha256:8942e89b6e6e0cd9a4ca26f12fd4b32a2f0dd1de7e631ea59101a183878d660f
+  - name: ray
+    type: pypi-version
+    package: ray
+    version: 2.58.0
+publish:
+  certification: hardware-untested
+  tags:
+    - digest
+    - hardware-untested
+tests:
+  - name: static
+    type: static
+    required: true
+  - name: runtime-command
+    type: runtime-command
+    required: true
+  - name: vendor-device
+    type: vendor-device
+    required: false
+    runner:
+      - intel
+labels:
+  org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
+  kuvryn.engine: vllm
+  kuvryn.vendor: intel
+  kuvryn.flavor: vllm-intel
+  kuvryn.certification: hardware-untested

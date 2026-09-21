@@ -1,0 +1,30 @@
+schema: kuvryn.engine-lock/v1
+flavor: tensorrt-llm-nvidia
+resolvedInputs:
+    - name: engine
+      type: static-version
+      value: 1.2.1
+      source: engine
+    - name: base-image
+      type: container-digest
+      value: nvcr.io/nvidia/tensorrt-llm/release:1.2.1
+      digest: sha256:33cd085b772947bd22b7273886539331420404e5d2a4a039945241945ff927b9
+      source: nvcr.io/nvidia/tensorrt-llm/release:1.2.1
+imageDigest: sha256:14cf7e26febcccd1445dc3c0774cc0cd72b17d36c79fa20e28e4da1e889433e3
+publishedTags:
+    - 14cf7e26febcccd1445dc3c0774cc0cd72b17d36c79fa20e28e4da1e889433e3
+    - v0.1.0_nvidia_tensorrt-llm_1.2.1
+    - v0.1.0_nvidia_tensorrt-llm_nightly
+    - latest
+    - hardware-certified
+testEvidence:
+    - name: static
+      status: passed
+    - name: sbom
+      status: passed
+    - name: vendor-device
+      status: passed
+    - name: wrapper-exec
+      status: passed
+    - name: runtime-command
+      status: passed

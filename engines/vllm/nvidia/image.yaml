@@ -1,0 +1,63 @@
+schema: kuvryn.engine-image/v1
+name: vllm-nvidia
+engine: vllm
+vendor: nvidia
+variant: default
+image:
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/vllm-nvidia
+  platforms:
+    - linux/amd64
+    - linux/arm64
+  base:
+    image: nvcr.io/nvidia/pytorch
+    tag: 25.01-py3
+build:
+  context: .
+  dockerfile: engines/vllm/nvidia/Dockerfile
+  args:
+    ENGINE: vllm
+    VENDOR: nvidia
+    VLLM_VERSION: 0.29.0
+    RAY_VERSION: 2.58.0
+capabilities:
+  accelerators:
+    - nvidia
+  collective: nccl
+  distributed: true
+  rdma: optional
+  rayRequired: true
+upstreams:
+  - name: engine
+    type: static-version
+    version: 0.29.0
+  - name: base-image
+    type: container-digest
+    image: nvcr.io/nvidia/pytorch:25.01-py3
+    digest: sha256:96990c82825613c3bdeebb66675c7c91b0123f64a5895623316dc5b824e0d7a9
+  - name: ray
+    type: pypi-version
+    package: ray
+    version: 2.58.0
+publish:
+  certification: hardware-certified
+  tags:
+    - digest
+    - latest
+tests:
+  - name: static
+    type: static
+    required: true
+  - name: runtime-command
+    type: runtime-command
+    required: true
+  - name: vendor-device
+    type: vendor-device
+    required: true
+    runner:
+      - nvidia
+labels:
+  org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
+  kuvryn.engine: vllm
+  kuvryn.vendor: nvidia
+  kuvryn.flavor: vllm-nvidia
+  kuvryn.certification: hardware-certified

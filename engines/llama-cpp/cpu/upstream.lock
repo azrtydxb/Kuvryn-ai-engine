@@ -1,0 +1,30 @@
+schema: kuvryn.engine-lock/v1
+flavor: llama-cpp-cpu
+resolvedInputs:
+    - name: engine
+      type: static-version
+      value: v0.4.1
+      source: engine
+    - name: base-image
+      type: container-digest
+      value: ubuntu:24.04
+      digest: sha256:69cecf4bbf72d2d44a9eef1b71fb98c7fb973d78af11399deccef19beb008ad9
+      source: ubuntu:24.04
+imageDigest: sha256:d5041240096cd7ffa39b010a6e0beab939f7b93da86276270759b70342f3d608
+publishedTags:
+    - d5041240096cd7ffa39b010a6e0beab939f7b93da86276270759b70342f3d608
+    - v0.1.0_cpu_llama-cpp_0.4.1
+    - v0.1.0_cpu_llama-cpp_nightly
+    - latest
+    - cpu-only
+testEvidence:
+    - name: static
+      status: passed
+    - name: vendor-device
+      status: passed
+    - name: sbom
+      status: passed
+    - name: wrapper-exec
+      status: passed
+    - name: runtime-command
+      status: passed

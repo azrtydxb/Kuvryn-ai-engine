@@ -1,0 +1,75 @@
+name: engine-build
+
+on:
+  workflow_run:
+    workflows: [engine-detect]
+    types: [completed]
+  workflow_dispatch:
+    inputs:
+      flavor:
+        description: Build one flavor
+        required: false
+
+permissions:
+  contents: read
+  packages: write
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: ${{ github.event_name == 'workflow_run' }}
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        if: ${{ github.event_name != 'pull_request' }}
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
+        with:
+          go-version-file: go.mod
+      - run: go test ./...
+      - run: go run ./cmd/kuvryn-manifest-check --root .
+      - run: go build -o bin/kuvryn-runtime-wrapper ./cmd/kuvryn-runtime-wrapper
+      - run: go run ./cmd/kuvryn-engine-detect --root . --output update-plan.json
+      - name: Select changed flavors
+        env:
+          FLAVOR: ${{ inputs.flavor }}
+        run: |
+          if [ -n "$FLAVOR" ]; then
+            printf '%s\n' "$FLAVOR" > changed-flavors.txt
+          else
+            jq -r '.flavors[] | select(.changed == true) | .name' update-plan.json > changed-flavors.txt
+          fi
+      - name: Build changed flavors and static CT reports
+        run: |
+          mkdir -p ct-reports image-digests
+          while read -r flavor; do
+            [ -n "$flavor" ] || continue
+            CI_TAG="ci-${GITHUB_SHA}-${flavor}" BUILD_PUSH=1 ci/build/build-image.sh "$flavor"
+            ci/container-tests/static-check.sh "ghcr.io/azrtydxb/kuvryn-ai-engine/${flavor}:ci" "$flavor" > "ct-reports/${flavor}.json"
+          done < changed-flavors.txt
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: engine-build-evidence
+          path: |
+            update-plan.json
+            changed-flavors.txt
+            ct-reports/*.json
+            image-digests/*
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: engine-ct-reports
+          path: ct-reports/*.json

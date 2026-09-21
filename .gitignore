@@ -1,0 +1,48 @@
+# OS/editor noise
+.DS_Store
+*.swp
+*.swo
+.vscode/
+.idea/
+
+# Procoder/session state
+.procoder/state/
+.procoder/index/
+.lycheecache
+
+# Build outputs
+bin/
+dist/
+build/
+out/
+coverage/
+
+# Go
+*.test
+*.prof
+
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.venv/
+venv/
+
+# Node
+node_modules/
+npm-debug.log*
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Container/build metadata
+*.tar
+*.oci
+.buildx-cache/
+publish-artifacts/
+ct-reports/
+lock-updates/
+image-digests/
+.kuvryn-model-cache/
+.buildkit-tls/
