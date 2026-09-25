@@ -4,10 +4,9 @@ name: engine-build
 # cluster emulates the other architecture, so each flavor is built natively on
 # every platform its manifest declares, and images are pushed to the cluster
 # registry (Nexus, :5000 is the only port that accepts a push).
+# Builds are manual only: they cost hours on the self-hosted runners, so the nightly
+# engine-detect run reports what changed but never triggers a build.
 on:
-  workflow_run:
-    workflows: [engine-detect]
-    types: [completed]
   workflow_dispatch:
     inputs:
       flavor:
@@ -27,7 +26,6 @@ env:
 
 jobs:
   plan:
-    if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request') }}
     runs-on: arc-azrtydxb
     timeout-minutes: 30
     # The runner image has no Go; the module proxy and checksum db are reached through Nexus.
@@ -35,11 +33,6 @@ jobs:
       image: golang:1-bookworm
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        if: ${{ github.event_name == 'workflow_run' }}
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
       - name: Trust the cluster CA and use the Go proxy
         run: |
           curl -sk -o /tmp/cluster-ca.crt https://192.168.10.131:8443/repository/public/cluster-ca.crt
@@ -78,11 +71,6 @@ jobs:
       ARCH: ${{ matrix.arch }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        if: ${{ github.event_name == 'workflow_dispatch' }}
-      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
-        if: ${{ github.event_name == 'workflow_run' }}
-        with:
-          ref: ${{ github.event.workflow_run.head_sha }}
       - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
         with:
           name: engine-plan
