@@ -66,7 +66,17 @@ fi
 if [[ "${BUILD_PUSH:-0}" == "1" ]]; then
 	mkdir -p image-digests
 	docker tag "${image}:ci" "${image}:${ci_tag}"
-	docker push "${image}:${ci_tag}"
+	# Nexus can take longer than the client's header timeout to commit a multi-GB layer;
+	# the blob is usually committed by then, so a retry sees "layer already exists".
+	for attempt in 1 2 3; do
+		docker push "${image}:${ci_tag}" && break
+		if ((attempt == 3)); then
+			echo "push of ${image}:${ci_tag} failed after ${attempt} attempts" >&2
+			exit 1
+		fi
+		echo "push attempt ${attempt} failed; retrying" >&2
+		sleep 30
+	done
 	digest=$(docker image inspect "${image}:${ci_tag}" --format '{{ index .RepoDigests 0 }}' | sed 's/^.*@//')
 	if [[ ! "$digest" =~ ^sha256:[0-9a-f]{64}$ ]]; then
 		echo "push did not produce an immutable digest for ${image}:${ci_tag}" >&2
