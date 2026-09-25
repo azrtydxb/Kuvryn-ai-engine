@@ -8,6 +8,8 @@ ARG VCS_REF
 ARG LLAMA_CPP_REF=v0.5.0
 ARG LLAMA_CPP_GPU_TARGETS="gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1100;gfx1101;gfx1102;gfx1150;gfx1151;gfx1200;gfx1201"
 ARG LLAMA_CPP_CMAKE_FLAGS="-DGGML_HIP=ON -DGGML_NATIVE=OFF"
+# The ROCm 10 dev image does not register /opt/rocm/lib with the dynamic linker.
+ENV LD_LIBRARY_PATH=/opt/rocm/lib
 
 LABEL org.opencontainers.image.source="https://github.com/azrtydxb/kuvryn-ai-engine" \
       org.opencontainers.image.created="${BUILD_DATE}" \
