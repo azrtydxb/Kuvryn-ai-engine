@@ -26,7 +26,8 @@ install_rocm_vllm() {
 		libdrm-dev \
 		libnuma-dev \
 		pkg-config \
-		protobuf-compiler
+		protobuf-compiler \
+		python3-dev
 	rm -rf /var/lib/apt/lists/*
 
 	python3 -m pip install --no-cache-dir --index-url "$rocm_index" --extra-index-url https://pypi.org/simple \
