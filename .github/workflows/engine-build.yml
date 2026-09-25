@@ -119,8 +119,16 @@ jobs:
           while read -r flavor; do
             [ -n "$flavor" ] || continue
             echo "::group::${flavor} (${ARCH})"
-            if CI_TAG="ci-${GITHUB_SHA}-${flavor}-${ARCH}" BUILD_PUSH=1 BUILDX_LOCAL_CACHE=0 ci/build/build-image.sh "$flavor" \
-              && ci/container-tests/static-check.sh "${KUVRYN_IMAGE_PREFIX}/${flavor}:ci" "$flavor" > "ct-reports/${flavor}.json"; then
+            ok=0
+            # A second attempt covers transient network faults inside the build (DNS, index timeouts).
+            for attempt in 1 2; do
+              if CI_TAG="ci-${GITHUB_SHA}-${flavor}-${ARCH}" BUILD_PUSH=1 BUILDX_LOCAL_CACHE=0 ci/build/build-image.sh "$flavor" \
+                && ci/container-tests/static-check.sh "${KUVRYN_IMAGE_PREFIX}/${flavor}:ci" "$flavor" > "ct-reports/${flavor}.json"; then
+                ok=1; break
+              fi
+              echo "::warning::${flavor} attempt ${attempt} failed on ${ARCH}"
+            done
+            if ((ok)); then
               echo "built ${flavor}"
             else
               echo "::error::${flavor} failed on ${ARCH}"
