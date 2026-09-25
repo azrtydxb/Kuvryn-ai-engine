@@ -50,8 +50,8 @@ jobs:
       - name: Cross-compile the runtime wrapper for both build architectures
         run: |
           mkdir -p wrappers
-          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o wrappers/kuvryn-runtime-wrapper-amd64 ./cmd/kuvryn-runtime-wrapper
-          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o wrappers/kuvryn-runtime-wrapper-arm64 ./cmd/kuvryn-runtime-wrapper
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -buildvcs=false -o wrappers/kuvryn-runtime-wrapper-amd64 ./cmd/kuvryn-runtime-wrapper
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -buildvcs=false -o wrappers/kuvryn-runtime-wrapper-arm64 ./cmd/kuvryn-runtime-wrapper
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: engine-plan

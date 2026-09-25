@@ -110,7 +110,7 @@ func TestWrapperReadinessAndGracefulShutdown(t *testing.T) {
 func buildWrapper(t *testing.T) string {
 	t.Helper()
 	path := filepath.Join(t.TempDir(), "kuvryn-runtime-wrapper")
-	cmd := exec.Command("go", "build", "-o", path, ".")
+	cmd := exec.Command("go", "build", "-buildvcs=false", "-o", path, ".")
 	if out, err := cmd.CombinedOutput(); err != nil {
 		t.Fatalf("build wrapper: %v\n%s", err, out)
 	}
