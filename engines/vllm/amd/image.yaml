@@ -8,16 +8,22 @@ image:
   platforms:
     - linux/amd64
   base:
-    image: rocm/dev-ubuntu-22.04
-    tag: 6.2.4
+    image: ubuntu
+    tag: "24.04"
 build:
   context: .
   dockerfile: engines/vllm/amd/Dockerfile
   args:
     ENGINE: vllm
     VENDOR: amd
-    VLLM_VERSION: 0.29.0
+    VLLM_VERSION: 0.30.0
     RAY_VERSION: 2.58.0
+    ROCM_VERSION: 10.0.0
+    TORCH_VERSION: 2.13.0+rocm10.0.0
+    TORCHVISION_VERSION: 0.28.0+rocm10.0.0
+    TRITON_VERSION: 3.8.0+git4cff872c.rocm10.0.0
+    AITER_REF: v0.1.22.post1
+    PYTORCH_ROCM_ARCH: gfx90a;gfx942;gfx950;gfx1100;gfx1101;gfx1150;gfx1151;gfx1200;gfx1201
 capabilities:
   accelerators:
     - amd
@@ -28,11 +34,21 @@ capabilities:
 upstreams:
   - name: engine
     type: static-version
-    version: 0.29.0
+    version: 0.30.0
   - name: base-image
     type: container-digest
-    image: rocm/dev-ubuntu-22.04:6.2.4
-    digest: sha256:030304ab0a88778b627b2eb2354c419146e105f5ac39ffd9c2438c82ef54b584
+    image: ubuntu:24.04
+    digest: sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
+  - name: rocm
+    type: static-version
+    version: 10.0.0
+  - name: torch
+    type: static-version
+    version: 2.13.0+rocm10.0.0
+  - name: aiter
+    type: github-tag
+    repository: ROCm/aiter
+    ref: v0.1.22.post1
   - name: ray
     type: pypi-version
     package: ray

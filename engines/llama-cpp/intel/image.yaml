@@ -16,7 +16,7 @@ build:
   args:
     ENGINE: llama-cpp
     VENDOR: intel
-    LLAMA_CPP_REF: v0.4.1
+    LLAMA_CPP_REF: v0.5.0
 capabilities:
   accelerators:
     - intel
@@ -27,7 +27,7 @@ capabilities:
 upstreams:
   - name: engine
     type: static-version
-    version: v0.4.1
+    version: v0.5.0
   - name: base-image
     type: container-digest
     image: intel/oneapi-runtime:2025.3.1-0-devel-ubuntu24.04

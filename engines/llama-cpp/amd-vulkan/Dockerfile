@@ -1,26 +1,31 @@
 # syntax=docker/dockerfile:1.7
-FROM rocm/dev-ubuntu-24.04:10.0.0-full
+FROM ubuntu:24.04
 
 ARG ENGINE=llama-cpp
 ARG VENDOR=amd
 ARG BUILD_DATE
 ARG VCS_REF
 ARG LLAMA_CPP_REF=v0.5.0
-ARG LLAMA_CPP_GPU_TARGETS="gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1100;gfx1101;gfx1102;gfx1150;gfx1151;gfx1200;gfx1201"
-ARG LLAMA_CPP_CMAKE_FLAGS="-DGGML_HIP=ON -DGGML_NATIVE=OFF"
+ARG LLAMA_CPP_CMAKE_FLAGS="-DGGML_VULKAN=ON -DGGML_NATIVE=OFF"
 
 LABEL org.opencontainers.image.source="https://github.com/azrtydxb/kuvryn-ai-engine" \
       org.opencontainers.image.created="${BUILD_DATE}" \
       org.opencontainers.image.revision="${VCS_REF}" \
       kuvryn.engine="${ENGINE}" \
       kuvryn.vendor="${VENDOR}" \
-      kuvryn.flavor="llama-cpp-amd" \
+      kuvryn.variant="vulkan" \
+      kuvryn.flavor="llama-cpp-amd-vulkan" \
       kuvryn.certification="hardware-untested"
 
 COPY ci/images/kuvryn-llama-cpp-serve ci/images/install-common-debian.sh ci/images/install-llama-cpp.sh /tmp/kuvryn-install/
+# Vulkan needs no vendor SDK in the image: glslc compiles the shaders at build time and
+# the Mesa RADV/ANV ICDs drive AMD and Intel GPUs at runtime.
 # hadolint ignore=DL3008
 RUN /tmp/kuvryn-install/install-common-debian.sh \
-    && HIPCXX="$(hipconfig -l)/clang" HIP_PATH="$(hipconfig -R)" LLAMA_CPP_REF="${LLAMA_CPP_REF}" LLAMA_CPP_CMAKE_FLAGS="${LLAMA_CPP_CMAKE_FLAGS} -DAMDGPU_TARGETS=${LLAMA_CPP_GPU_TARGETS}" /tmp/kuvryn-install/install-llama-cpp.sh \
+    && apt-get update \
+    && apt-get install -y --no-install-recommends libvulkan-dev glslc spirv-headers libvulkan1 mesa-vulkan-drivers \
+    && rm -rf /var/lib/apt/lists/* \
+    && LLAMA_CPP_REF="${LLAMA_CPP_REF}" LLAMA_CPP_CMAKE_FLAGS="${LLAMA_CPP_CMAKE_FLAGS}" /tmp/kuvryn-install/install-llama-cpp.sh \
     && install -m 0755 /tmp/kuvryn-install/kuvryn-llama-cpp-serve /usr/local/bin/kuvryn-llama-cpp-serve \
     && rm -rf /tmp/kuvryn-install
 

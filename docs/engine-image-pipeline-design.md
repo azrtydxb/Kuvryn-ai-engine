@@ -39,6 +39,7 @@ sglang-intel
 llama-cpp-cpu
 llama-cpp-nvidia
 llama-cpp-amd
+llama-cpp-amd-vulkan
 tensorrt-llm-nvidia
 ```
 
@@ -176,7 +177,7 @@ flavor: vllm-nvidia
 resolvedInputs:
   - name: engine
     type: static-version
-    value: 0.29.0
+    value: 0.30.0
     source: engines/vllm/nvidia/image.yaml
   - name: base-image
     type: container-digest
@@ -186,7 +187,7 @@ resolvedInputs:
 imageDigest: sha256:bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
 publishedTags:
   - bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb
-  - v0.1.0_nvidia_vllm_0.29.0
+  - v0.1.0_nvidia_vllm_0.30.0
   - v0.1.0_nvidia_vllm_nightly
   - latest
   - hardware-certified

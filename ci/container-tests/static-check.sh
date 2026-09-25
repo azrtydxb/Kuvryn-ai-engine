@@ -28,7 +28,7 @@ if [[ "$cmd" == "[]" ]]; then
 	echo "image ${image} does not declare a runtime command" >&2
 	exit 1
 fi
-vendor=${flavor##*-}
+vendor=$(awk '/^vendor:/ { print $2; exit }' "$(ci/lib/manifest-path.sh "$flavor")")
 if [[ "$label_vendor" != "$vendor" ]]; then
 	echo "image ${image} declares kuvryn.vendor=${label_vendor:-<empty>}, want ${vendor}" >&2
 	exit 1

@@ -7,7 +7,7 @@ ARG BUILD_DATE
 ARG VCS_REF
 ENV VIRTUAL_ENV=/opt/kuvryn/venv
 ENV PATH="/opt/kuvryn/venv/bin:${PATH}"
-ARG VLLM_VERSION=0.29.0
+ARG VLLM_VERSION=0.30.0
 ARG RAY_VERSION=2.58.0
 
 LABEL org.opencontainers.image.source="https://github.com/azrtydxb/kuvryn-ai-engine" \

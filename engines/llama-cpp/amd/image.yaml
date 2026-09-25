@@ -8,15 +8,16 @@ image:
   platforms:
     - linux/amd64
   base:
-    image: rocm/dev-ubuntu-22.04
-    tag: 6.2.4
+    image: rocm/dev-ubuntu-24.04
+    tag: 10.0.0-full
 build:
   context: .
   dockerfile: engines/llama-cpp/amd/Dockerfile
   args:
     ENGINE: llama-cpp
     VENDOR: amd
-    LLAMA_CPP_REF: v0.4.1
+    LLAMA_CPP_REF: v0.5.0
+    LLAMA_CPP_GPU_TARGETS: gfx908;gfx90a;gfx942;gfx950;gfx1030;gfx1100;gfx1101;gfx1102;gfx1150;gfx1151;gfx1200;gfx1201
 capabilities:
   accelerators:
     - amd
@@ -27,11 +28,11 @@ capabilities:
 upstreams:
   - name: engine
     type: static-version
-    version: v0.4.1
+    version: v0.5.0
   - name: base-image
     type: container-digest
-    image: rocm/dev-ubuntu-22.04:6.2.4
-    digest: sha256:030304ab0a88778b627b2eb2354c419146e105f5ac39ffd9c2438c82ef54b584
+    image: rocm/dev-ubuntu-24.04:10.0.0-full
+    digest: sha256:518ced857e9bc4f27392985257dcdf19c43d28918ff6e60074ea09ceb9edd19d
 publish:
   certification: hardware-untested
   tags:

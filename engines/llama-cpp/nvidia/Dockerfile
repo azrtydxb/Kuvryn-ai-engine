@@ -5,7 +5,7 @@ ARG ENGINE=llama-cpp
 ARG VENDOR=nvidia
 ARG BUILD_DATE
 ARG VCS_REF
-ARG LLAMA_CPP_REF=v0.4.1
+ARG LLAMA_CPP_REF=v0.5.0
 ARG LLAMA_CPP_CMAKE_FLAGS="-DGGML_CUDA=ON -DCMAKE_EXE_LINKER_FLAGS=-Wl,--allow-shlib-undefined -DCMAKE_SHARED_LINKER_FLAGS=-L/usr/local/cuda/lib64/stubs"
 
 LABEL org.opencontainers.image.source="https://github.com/azrtydxb/kuvryn-ai-engine" \

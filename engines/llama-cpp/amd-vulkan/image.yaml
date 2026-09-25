@@ -1,26 +1,26 @@
 schema: kuvryn.engine-image/v1
-name: llama-cpp-cpu
+name: llama-cpp-amd-vulkan
 engine: llama-cpp
-vendor: cpu
-variant: default
+vendor: amd
+variant: vulkan
 image:
-  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/llama-cpp-cpu
+  repository: ghcr.io/azrtydxb/kuvryn-ai-engine/llama-cpp-amd-vulkan
   platforms:
     - linux/amd64
-    - linux/arm64
   base:
     image: ubuntu
     tag: "24.04"
 build:
   context: .
-  dockerfile: engines/llama-cpp/cpu/Dockerfile
+  dockerfile: engines/llama-cpp/amd-vulkan/Dockerfile
   args:
     ENGINE: llama-cpp
-    VENDOR: cpu
+    VENDOR: amd
     LLAMA_CPP_REF: v0.5.0
 capabilities:
   accelerators:
-    - cpu
+    - amd
+    - intel
   collective: none
   distributed: false
   rdma: optional
@@ -32,12 +32,12 @@ upstreams:
   - name: base-image
     type: container-digest
     image: ubuntu:24.04
-    digest: sha256:69cecf4bbf72d2d44a9eef1b71fb98c7fb973d78af11399deccef19beb008ad9
+    digest: sha256:008173c23f95b170204355c12626cb5a965d779a7e1283b09e9cffbb1bf33ca3
 publish:
-  certification: cpu-only
+  certification: hardware-untested
   tags:
     - digest
-    - cpu-latest
+    - hardware-untested
 tests:
   - name: static
     type: static
@@ -47,12 +47,14 @@ tests:
     required: true
   - name: vendor-device
     type: vendor-device
-    required: true
+    required: false
     runner:
-      - cpu
+      - amd
+      - intel
 labels:
   org.opencontainers.image.source: https://github.com/azrtydxb/kuvryn-ai-engine
   kuvryn.engine: llama-cpp
-  kuvryn.vendor: cpu
-  kuvryn.flavor: llama-cpp-cpu
-  kuvryn.certification: cpu-only
+  kuvryn.vendor: amd
+  kuvryn.variant: vulkan
+  kuvryn.flavor: llama-cpp-amd-vulkan
+  kuvryn.certification: hardware-untested

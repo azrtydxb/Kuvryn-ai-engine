@@ -5,7 +5,7 @@ ARG ENGINE=llama-cpp
 ARG VENDOR=cpu
 ARG BUILD_DATE
 ARG VCS_REF
-ARG LLAMA_CPP_REF=v0.4.1
+ARG LLAMA_CPP_REF=v0.5.0
 ARG LLAMA_CPP_CMAKE_FLAGS=""
 
 LABEL org.opencontainers.image.source="https://github.com/azrtydxb/kuvryn-ai-engine" \

@@ -53,7 +53,7 @@ jobs:
         run: |
           flavor="$FLAVOR"
           go run ./cmd/kuvryn-ct-validate \
-            --manifest "engines/${flavor%-*}/${flavor##*-}/image.yaml" \
+            --manifest "$(ci/lib/manifest-path.sh "$flavor")" \
             --report "ct-reports/${flavor}.json"
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:

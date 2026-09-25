@@ -2,7 +2,7 @@
 set -euo pipefail
 
 flavor=${1:?usage: buildctl-build-image.sh <flavor> [image-ref]}
-manifest=${KUVRYN_MANIFEST:-engines/${flavor%-*}/${flavor##*-}/image.yaml}
+manifest=${KUVRYN_MANIFEST:-$(ci/lib/manifest-path.sh "$flavor")}
 image_ref=${2:-${KUVRYN_REGISTRY:-192.168.10.131:5000}/azrtydxb/kuvryn-ai-engine/${flavor}:${KUVRYN_TAG:-kw-test}}
 platform=${KUVRYN_PLATFORM:-linux/arm64}
 buildkit_host=${BUILDKIT_HOST:-tcp://192.168.10.130:1234}

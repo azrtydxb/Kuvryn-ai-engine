@@ -73,7 +73,7 @@ After build and CT pass, publish tags include the immutable digest tag plus vers
 
 - `vllm-nvidia`, `vllm-amd`, `vllm-intel`
 - `sglang-nvidia`, `sglang-amd`, `sglang-intel`
-- `llama-cpp-cpu`, `llama-cpp-nvidia`, `llama-cpp-amd`, `llama-cpp-intel`
+- `llama-cpp-cpu`, `llama-cpp-nvidia`, `llama-cpp-amd`, `llama-cpp-amd-vulkan`, `llama-cpp-intel`
 - `tensorrt-llm-nvidia`
 
 AMD and Intel flavors are built for now, but marked `hardware-untested` because this project does not have AMD/Intel hardware. They must not be treated as hardware-certified artifacts. Hardware-backed CT is NVIDIA-only in this repository.
