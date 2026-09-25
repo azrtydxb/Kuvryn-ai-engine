@@ -16,7 +16,9 @@ Build one flavor locally after compiling the runtime wrapper:
 ```bash
 go build -o bin/kuvryn-runtime-wrapper ./cmd/kuvryn-runtime-wrapper
 ci/build/build-image.sh llama-cpp-cpu engines/llama-cpp/cpu/image.yaml
-# CI sets BUILD_PUSH=1 to push a temporary ci-<sha>-<flavor> tag and record image-digests/<flavor>.digest.
+# CI sets BUILD_PUSH=1 to push a temporary ci-<sha>-<flavor>-<arch> tag and record image-digests/<flavor>.digest.
+# CI runs on the org ARC runners (amd64 on novanas, arm64 on kw) and pushes to the cluster registry;
+# KUVRYN_IMAGE_PREFIX=192.168.10.131:5000/azrtydxb/kuvryn-ai-engine overrides the default ghcr.io prefix.
 mkdir -p ct-reports
 ci/container-tests/static-check.sh ghcr.io/azrtydxb/kuvryn-ai-engine/llama-cpp-cpu:ci llama-cpp-cpu \
   > ct-reports/llama-cpp-cpu.json

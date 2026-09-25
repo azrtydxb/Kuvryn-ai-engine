@@ -1,5 +1,9 @@
 name: engine-build
 
+# Builds run on the org's ARC runners: amd64 on novanas, arm64 on kw. Neither
+# cluster emulates the other architecture, so each flavor is built natively on
+# every platform its manifest declares, and images are pushed to the cluster
+# registry (Nexus, :5000 is the only port that accepts a push).
 on:
   workflow_run:
     workflows: [engine-detect]
@@ -12,17 +16,22 @@ on:
 
 permissions:
   contents: read
-  packages: write
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  KUVRYN_IMAGE_PREFIX: 192.168.10.131:5000/azrtydxb/kuvryn-ai-engine
+
 jobs:
-  build:
+  plan:
     if: ${{ github.event_name == 'workflow_dispatch' || (github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.event != 'pull_request') }}
-    runs-on: ubuntu-latest
-    timeout-minutes: 45
+    runs-on: arc-azrtydxb
+    timeout-minutes: 30
+    # The runner image has no Go; the module proxy and checksum db are reached through Nexus.
+    container:
+      image: golang:1-bookworm
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
         if: ${{ github.event_name == 'workflow_dispatch' }}
@@ -30,21 +39,62 @@ jobs:
         if: ${{ github.event_name == 'workflow_run' }}
         with:
           ref: ${{ github.event.workflow_run.head_sha }}
-      - uses: docker/setup-buildx-action@8d2750c68a42422c14e847fe6c8ac0403b4cbd6f
-      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
-        if: ${{ github.event_name != 'pull_request' }}
-        with:
-          registry: ghcr.io
-          username: ${{ github.actor }}
-          password: ${{ secrets.GITHUB_TOKEN }}
-      - uses: actions/setup-go@40f1582b2485089dde7abd97c1529aa768e1baff
-        with:
-          go-version-file: go.mod
+      - name: Trust the cluster CA and use the Go proxy
+        run: |
+          curl -sk -o /tmp/cluster-ca.crt https://192.168.10.131:8443/repository/public/cluster-ca.crt
+          echo "SSL_CERT_FILE=/tmp/cluster-ca.crt" >> "$GITHUB_ENV"
+          echo "GOPROXY=https://192.168.10.131:8443/repository/golang/,direct" >> "$GITHUB_ENV"
       - run: go test ./...
       - run: go run ./cmd/kuvryn-manifest-check --root .
-      - run: go build -o bin/kuvryn-runtime-wrapper ./cmd/kuvryn-runtime-wrapper
       - run: go run ./cmd/kuvryn-engine-detect --root . --output update-plan.json
-      - name: Select changed flavors
+      - name: Cross-compile the runtime wrapper for both build architectures
+        run: |
+          mkdir -p wrappers
+          CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o wrappers/kuvryn-runtime-wrapper-amd64 ./cmd/kuvryn-runtime-wrapper
+          CGO_ENABLED=0 GOOS=linux GOARCH=arm64 go build -o wrappers/kuvryn-runtime-wrapper-arm64 ./cmd/kuvryn-runtime-wrapper
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: engine-plan
+          path: |
+            update-plan.json
+            wrappers/
+
+  build:
+    needs: plan
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: amd64
+            runner: arc-azrtydxb-amd64-publish
+            timeout: 720
+          - arch: arm64
+            runner: arc-azrtydxb-publish
+            timeout: 240
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: ${{ matrix.timeout }}
+    env:
+      ARCH: ${{ matrix.arch }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: ${{ github.event_name == 'workflow_dispatch' }}
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262
+        if: ${{ github.event_name == 'workflow_run' }}
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c
+        with:
+          name: engine-plan
+      - name: Install the runtime wrapper for this architecture
+        run: |
+          mkdir -p bin
+          install -m 0755 "wrappers/kuvryn-runtime-wrapper-${ARCH}" bin/kuvryn-runtime-wrapper
+      - uses: docker/login-action@c94ce9fb468520275223c153574b00df6fe4bcc9
+        with:
+          registry: 192.168.10.131:5000
+          username: ${{ secrets.NEXUS_USER }}
+          password: ${{ secrets.NEXUS_PASSWORD }}
+      - name: Select changed flavors that declare this platform
         env:
           FLAVOR: ${{ inputs.flavor }}
         run: |
@@ -53,23 +103,30 @@ jobs:
           else
             jq -r '.flavors[] | select(.changed == true) | .name' update-plan.json > changed-flavors.txt
           fi
-      - name: Build changed flavors and static CT reports
+          : > build-flavors.txt
+          while read -r flavor; do
+            [ -n "$flavor" ] || continue
+            if grep -q "linux/${ARCH}" "$(ci/lib/manifest-path.sh "$flavor")"; then
+              printf '%s\n' "$flavor" >> build-flavors.txt
+            fi
+          done < changed-flavors.txt
+          echo "building on ${ARCH}:"; cat build-flavors.txt
+      - name: Build flavors and static CT reports
         run: |
           mkdir -p ct-reports image-digests
           while read -r flavor; do
             [ -n "$flavor" ] || continue
-            CI_TAG="ci-${GITHUB_SHA}-${flavor}" BUILD_PUSH=1 ci/build/build-image.sh "$flavor"
-            ci/container-tests/static-check.sh "ghcr.io/azrtydxb/kuvryn-ai-engine/${flavor}:ci" "$flavor" > "ct-reports/${flavor}.json"
-          done < changed-flavors.txt
+            CI_TAG="ci-${GITHUB_SHA}-${flavor}-${ARCH}" BUILD_PUSH=1 BUILDX_LOCAL_CACHE=0 ci/build/build-image.sh "$flavor"
+            ci/container-tests/static-check.sh "${KUVRYN_IMAGE_PREFIX}/${flavor}:ci" "$flavor" > "ct-reports/${flavor}.json"
+          done < build-flavors.txt
       - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        if: ${{ always() }}
         with:
-          name: engine-build-evidence
+          name: engine-build-evidence-${{ matrix.arch }}
           path: |
             update-plan.json
             changed-flavors.txt
+            build-flavors.txt
             ct-reports/*.json
             image-digests/*
-      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
-        with:
-          name: engine-ct-reports
-          path: ct-reports/*.json
+          if-no-files-found: ignore

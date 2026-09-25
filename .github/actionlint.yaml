@@ -5,3 +5,8 @@ self-hosted-runner:
     - x64
     - nvidia
     - gpu
+    # ARC scale sets registered to the azrtydxb org (one label each)
+    - arc-azrtydxb
+    - arc-azrtydxb-publish
+    - arc-azrtydxb-amd64
+    - arc-azrtydxb-amd64-publish

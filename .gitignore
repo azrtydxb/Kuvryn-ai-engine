@@ -13,7 +13,7 @@
 # Build outputs
 bin/
 dist/
-build/
+/build/
 out/
 coverage/
 
